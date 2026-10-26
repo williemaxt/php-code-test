@@ -31,10 +31,15 @@ class ShipDateUpdater
                 // if a date is successfully parsed, format it to 'Y-m-d 00:00:00' and update the database
                 if ($parsedDate) {
                     $formattedDate = $parsedDate->format('Y-m-d 00:00:00');
-                    $updateStmt->execute([
-                        ':shipdate_expected' => $formattedDate,
-                        ':orderid'  => $row['orderid']
-                    ]);
+
+                    try {
+                        $updateStmt->execute([
+                            ':shipdate_expected' => $formattedDate,
+                            ':orderid'  => $row['orderid']
+                        ]);
+                    } catch (PDOException $e) {
+                        error_log('Failed to update shipdate_expected for orderid ' . $row['orderid'] . ': ' . $e->getMessage());
+                    }
                 }
             }
         }

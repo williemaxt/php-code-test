@@ -9,9 +9,15 @@ $pdo = getDatabaseConnection();
 $dateUpdater = new ShipDateUpdater($pdo);
 $dateUpdater->updateExpectedShipDates();
 
-// select all orders from the database
-$stmt = $pdo->query('SELECT orderid, comments, shipdate_expected FROM sweetwater_test ORDER BY orderid ASC');
-$orders = $stmt->fetchAll();
+try {
+    // select all orders from the database
+    $stmt = $pdo->query('SELECT orderid, comments, shipdate_expected FROM sweetwater_test ORDER BY orderid ASC');
+    $orders = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log('Database Query Failed: ' . $e->getMessage());
+    die('Database query error. Check server logs.');
+}
+
 
 // geting the order dates from the orders comments and populating the shipdate_expected field
 foreach ($orders as &$order) {
@@ -121,10 +127,6 @@ $categories = $categorizer->categorize($orders);
 
         <main>
             <section class="order-section">
-                <h2 class="">
-                    <span class="badge"><?= count($orders); ?></span>
-                </h2>
-
                 <?php if (empty($orders)): ?>
                     <div class="empty-notice">No comments matched this section.</div>
                 <?php else: ?>
