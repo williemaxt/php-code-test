@@ -116,8 +116,11 @@ echo count($categories[CommentCategorizer::REFERRAL]);
                 <?php if (empty($orders)): ?>
                     <div class="empty-notice">No comments matched this section.</div>
                 <?php else: ?>
-                    <table>
-                        <thead>
+                    <?php foreach(array_keys($categories) as $category): ?>
+                        <p><strong><?= htmlspecialchars((string)$category); ?></strong> <span class="badge"><?= count($categories[$category]); ?></span></p>
+                        
+                        <table>
+                            <thead>
                             <tr>
                                 <th style="width: 15%;">Order ID</th>
                                 <th style="width: 20%;">Ship Date Expected</th>
@@ -125,7 +128,8 @@ echo count($categories[CommentCategorizer::REFERRAL]);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($orders as $order): ?>
+                            <!-- Display orders in each category -->
+                            <?php foreach ($categories[$category] as $order): ?>
                                 <tr>
                                     <td class="order-id">#<?= htmlspecialchars((string)$order['orderid']); ?></td>
                                     <td class="ship-date">
@@ -134,8 +138,8 @@ echo count($categories[CommentCategorizer::REFERRAL]);
                                     <td class="comment-cell"><?= htmlspecialchars($order['comments']); ?></td>
                                 </tr>
                             <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                        </table>
+                    <?php endforeach; ?>
                 <?php endif; ?>
             </section>
         </main>
