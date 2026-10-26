@@ -2,17 +2,29 @@
 
 include_once __DIR__ . '/../data/db_connection.php';
 include_once __DIR__ . '/Categorizer.php';
+include_once __DIR__ . '/DateUpdater.php';
 
 $pdo = getDatabaseConnection();
+// update the expected ship dates in the database based on comments
+$dateUpdater = new ShipDateUpdater($pdo);
+$dateUpdater->updateExpectedShipDates();
 
 // select all orders from the database
 $stmt = $pdo->query('SELECT orderid, comments, shipdate_expected FROM sweetwater_test ORDER BY orderid ASC');
 $orders = $stmt->fetchAll();
 
+// geting the order dates from the orders comments and populating the shipdate_expected field
+foreach ($orders as &$order) {
+    $comment = $order['comments'];
+    if (preg_match('/\b(\d{4}-\d{2}-\d{2})\b/', $comment, $matches)) {
+        $order['shipdate_expected'] = $matches[1];
+        echo "Order ID: {$order['orderid']} - Ship Date Expected: {$order['shipdate_expected']}\n";
+    } 
+}
+
 // categorize the orders based on their comments
 $categorizer = new CommentCategorizer();
 $categories = $categorizer->categorize($orders);
-echo count($categories[CommentCategorizer::REFERRAL]);
 ?>
 
 <!DOCTYPE html>
