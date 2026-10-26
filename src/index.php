@@ -24,13 +24,48 @@ foreach ($orders as &$order) {
     $comment = $order['comments'];
     if (preg_match('/\b(\d{4}-\d{2}-\d{2})\b/', $comment, $matches)) {
         $order['shipdate_expected'] = $matches[1];
-        echo "Order ID: {$order['orderid']} - Ship Date Expected: {$order['shipdate_expected']}\n";
     } 
 }
 
 // categorize the orders based on their comments
 $categorizer = new CommentCategorizer();
 $categories = $categorizer->categorize($orders);
+
+// adds cvs download functionality
+if (($_GET['download'] ?? '') === 'csv') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="customer-comments-report.csv"');
+
+    $output = fopen('php://output', 'w');
+
+    fputcsv(
+        $output,
+        ['Category', 'Order ID', 'Ship Date Expected', 'Customer Comment'],
+        ',',
+        '"',
+        ''
+    );
+
+    foreach ($categories as $category => $categoryOrders) {
+        foreach ($categoryOrders as $order) {
+            fputcsv(
+                $output,
+                [
+                    $category,
+                    $order['orderid'],
+                    $order['shipdate_expected'] ?? 'None',
+                    $order['comments'],
+                ],
+                ',',
+                '"',
+                ''
+            );
+        }
+    }
+
+    fclose($output);
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -122,6 +157,7 @@ $categories = $categorizer->categorize($orders);
             <h1>Customer Comments Report</h1>
             <div class="stats-bar">
                 Total Orders Processed: <strong><?= count($orders); ?></strong>
+                <a href="?download=csv">Download CSV</a>
             </div>
         </header>
 
