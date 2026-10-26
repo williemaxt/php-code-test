@@ -1,12 +1,18 @@
 <?php
 
 include_once __DIR__ . '/../data/db_connection.php';
+include_once __DIR__ . '/Categorizer.php';
 
 $pdo = getDatabaseConnection();
 
 // select all orders from the database
 $stmt = $pdo->query('SELECT orderid, comments, shipdate_expected FROM sweetwater_test ORDER BY orderid ASC');
 $orders = $stmt->fetchAll();
+
+// categorize the orders based on their comments
+$categorizer = new CommentCategorizer();
+$categories = $categorizer->categorize($orders);
+echo count($categories[CommentCategorizer::REFERRAL]);
 ?>
 
 <!DOCTYPE html>
